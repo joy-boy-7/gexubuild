@@ -1,9 +1,12 @@
 name: Build & Install Jayanth's Gexu
 on:
-  workflow_dispatch:  # This adds the manual "Run" button
+  workflow_dispatch:
   push:
     branches:
       - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Future-proofing for the June deadline
 
 jobs:
   build:
@@ -21,10 +24,14 @@ jobs:
           distribution: temurin
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true  # Bypassing the broken GitHub cache service
 
       - name: Build Standard Debug APK
-        run: ./gradlew :app:assembleStandardDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleStandardDebug --no-daemon --stacktrace
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
