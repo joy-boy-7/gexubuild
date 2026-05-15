@@ -1,4 +1,4 @@
-name: Build & Install Jay's Gexu
+name: Build Unsigned Release Gexu
 on:
   workflow_dispatch:
   push:
@@ -7,11 +7,11 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  CI: false  # The magic override: prevents GitHub from treating warnings as fatal errors
+  CI: false  # Prevents GitHub from killing the build over minor code warnings
 
 jobs:
   build:
-    name: Build Gexu Debug APK
+    name: Build Unsigned Release APK
     runs-on: 'ubuntu-latest'
 
     steps:
@@ -29,14 +29,14 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build Standard Debug APK
+      - name: Build Unsigned Release APK
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleStandardDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease -Pinclude-telemetry -Penable-updater --no-daemon --stacktrace
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gexu-Jay-Debug-Build
+          name: Gexu-Unsigned-Release-Build
           path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
