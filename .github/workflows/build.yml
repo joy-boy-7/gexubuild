@@ -7,7 +7,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  CI: false  # Prevents GitHub from killing the build over minor code warnings
+  CI: false
 
 jobs:
   build:
@@ -29,10 +29,25 @@ jobs:
         with:
           cache-disabled: true
 
+      - name: Inject Dummy Google Services (Fork Bypass)
+        run: |
+          cat << 'EOF' > app/google-services.json
+          {
+            "project_info": { "project_number": "1234567890", "project_id": "dummy-project" },
+            "client": [ {
+              "client_info": { "mobilesdk_app_id": "1:1234567890:android:abcdef", "android_client_info": { "package_name": "com.ramsesbr.gexu" } },
+              "oauth_client": [],
+              "api_key": [ { "current_key": "dummy-api-key" } ],
+              "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+            } ],
+            "configuration_version": "1"
+          }
+          EOF
+
       - name: Build Unsigned Release APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease -Pinclude-telemetry -Penable-updater --no-daemon --stacktrace
+          ./gradlew assembleRelease -Penable-updater --no-daemon --stacktrace
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
